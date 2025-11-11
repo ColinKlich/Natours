@@ -8,6 +8,8 @@ const xss = require('xss-clean');
 const hpp = require('hpp');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
+const session = require('express-session');
+const lusca = require('lusca');
 const compression = require('compression');
 const cors = require('cors');
 
@@ -70,6 +72,18 @@ app.post(
 app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 app.use(cookieParser());
+
+// Sessions are required for CSRF protection
+app.use(
+  session({
+    secret: process.env['SESSION_SECRET'] || 'keyboard_cat', // Use a secure secret in production!
+    resave: false,
+    saveUninitialized: true,
+    cookie: { secure: false, maxAge: 60000 }
+  })
+);
+// CSRF protection middleware
+app.use(lusca.csrf());
 
 // Data sanitization against NoSQL query injection
 app.use(mongoSanitize());
