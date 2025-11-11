@@ -46,6 +46,10 @@ exports.getAccount = (req, res) => {
 };
 
 exports.updateUserData = catchAsync(async (req, res, next) => {
+  // Validate incoming name and email to prevent NoSQL injection
+  if (typeof req.body.name !== 'string' || typeof req.body.email !== 'string') {
+    return next(new AppError('Invalid input data', 400));
+  }
   const updatedUser = await User.findByIdAndUpdate(
     req.user.id,
     {
